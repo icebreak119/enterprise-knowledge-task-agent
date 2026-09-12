@@ -4,10 +4,12 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import JSON, ForeignKey, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.core.config import get_settings
 from app.db.base import Base
 
-# 与 embedding 模型维度对应，Day 4 起接入 RAG 后按所选模型调整。
-VECTOR_DIM = 1536
+# 维度统一来自配置：更换 embedding 模型时必须同步 settings.embedding_dim
+# 并用 Alembic 重建该列，否则新旧向量维度不一致会导致写入失败。
+VECTOR_DIM = get_settings().embedding_dim
 
 
 class DocumentChunk(Base):

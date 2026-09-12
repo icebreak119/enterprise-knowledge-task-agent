@@ -138,6 +138,29 @@ parsed = resp.choices[0].message.parsed
 - **重试**：`tenacity` 包裹，仅对连接超时 / 429 / 5xx 重试，最多 3 次，指数退避；`ParseError` 最多重试 1 次。
 - **无 key 保护**：`factory.py` 检测到 `llm_api_key` 为空时返回 `FakeProvider`，保证本地起服务不崩。
 
+### 2.3 实际落地情况（已完成，2026-09-12）
+
+实现与方案的**偏差记录**，后续 Day 沿用：
+
+| 项 | 方案原计划 | 实际做法 | 原因 |
+| --- | --- | --- | --- |
+| parse 入口 | `client.beta.chat.completions.parse` | `client.chat.completions.parse` | openai SDK 3.x 已转正，`beta` 路径弃用 |
+| structlog | Day 2 引入 | **推迟到 Day 5** | 先用标准库 logging 够用，避免 Day 2 引入无谓复杂度 |
+| respx | dev 依赖 | 未引入 | 直接 monkeypatch `_request`，测试更快也不依赖真实 key |
+| 推理模型 | 未考虑 | 新增 `LLM_THINKING` 配置 | GLM-4.7-Flash 思维链吃满 `max_tokens` 导致 `content` 为空 |
+| 降级判定 | 任何异常都降级 | **仅不可恢复错误才降级** | 429 会导致 `json_schema` 被永久关闭（已修 + 补测试） |
+
+**已验证**（真实 GLM 调用，非 mock）：
+
+```
+POST /api/chat {"user_id":1,"message":"差旅报销标准是什么？"}
+→ {"intent":"knowledge_qa","need_human":false,"model":"glm-4.7-flash",
+   "reply":"结论：当前资料中没有找到依据。..."}
+```
+
+测试：`pytest -q` → 15 passed（无需 API Key）。
+遗留：智谱免费额度限流较频繁（429 code 1305），Day 3 需考虑给 `/api/chat` 加排队或更友好的限流提示。
+
 ### 2.3 配置新增（config.py + .env.example）
 
 ```

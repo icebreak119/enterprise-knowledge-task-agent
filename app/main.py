@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -14,6 +15,12 @@ async def lifespan(app: FastAPI):
     await init_db(engine)
     yield
     await engine.dispose()
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)-7s %(name)s | %(message)s",
+)
 
 
 def create_app() -> FastAPI:
