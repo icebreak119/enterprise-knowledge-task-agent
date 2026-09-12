@@ -76,9 +76,10 @@ psql -U postgres -h localhost -c "CREATE DATABASE enterprise_agent OWNER agent;"
 # 2) 按上文步骤 2–5 初始化并启动
 ```
 
-`init_db` 会尝试 `CREATE EXTENSION IF NOT EXISTS vector`；**若实例未安装 pgvector**（本机默认即如此），
-会输出一条 warning 并跳过 `document_chunks` 表，其余 7 张表照常建立，服务可以正常启动。
-需要向量检索时请用 `docker compose` 提供的 `pgvector/pgvector:pg16` 镜像，或为本机实例安装 pgvector 插件。
+本机实例已编译安装 **pgvector 0.7.4**，向量检索可用；编译步骤见 `docs/pgvector-windows-build.md`。
+
+`init_db` 仍保留了降级逻辑：若换到没有 pgvector 的实例，扩展创建失败时会输出 warning 并跳过
+`document_chunks`，其余 7 张表照常建立，服务依然能启动，只是没有向量能力。
 
 ## 里程碑
 
