@@ -34,10 +34,18 @@ class Settings(BaseSettings):
     #   本地 vLLM     视启动参数而定
     llm_extra_body: str = ""
 
-    # Embedding（Day 4 起使用；换模型时必须同步 embedding_dim 并重建向量列）
+    # Embedding（换模型时必须同步 embedding_dim 并重建向量列）
+    # 实测：阿里云百炼 qwen3.7-text-embedding / -flash 均为 1024 维
     embedding_model: str = "text-embedding-3-small"
     embedding_dim: int = 1536
     embedding_base_url: str = ""
+    # 批量上限由厂商接口决定，超过会被拒
+    embedding_batch_size: int = 32
+
+    @property
+    def embedding_enabled(self) -> bool:
+        """是否配置了可用的 embedding 凭据；未配置时入库链路不可用。"""
+        return bool(self.llm_api_key)
 
     @property
     def llm_enabled(self) -> bool:
