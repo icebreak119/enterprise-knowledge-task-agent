@@ -27,9 +27,12 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 2048  # 推理模型会先输出思维链，需留足余量
     llm_timeout: float = 60
     llm_max_retries: int = 3
-    # enabled / disabled / auto：auto 表示不向厂商传 thinking 参数。
-    # GLM-4.x 这类推理模型默认会输出思维链并占用 max_tokens，建议显式 disabled。
-    llm_thinking: str = "auto"
+    # 厂商私有参数的逃生舱：JSON 对象，原样并入请求体，留空则不传。
+    # 各家关闭思维链的字段并不统一，写死一种会绑死厂商：
+    #   智谱 GLM      {"thinking": {"type": "disabled"}}
+    #   阿里云 Qwen3  {"enable_thinking": false}
+    #   本地 vLLM     视启动参数而定
+    llm_extra_body: str = ""
 
     # Embedding（Day 4 起使用；换模型时必须同步 embedding_dim 并重建向量列）
     embedding_model: str = "text-embedding-3-small"

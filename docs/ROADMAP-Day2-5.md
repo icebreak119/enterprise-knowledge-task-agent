@@ -147,27 +147,35 @@ parsed = resp.choices[0].message.parsed
 | parse 入口 | `client.beta.chat.completions.parse` | `client.chat.completions.parse` | openai SDK 3.x 已转正，`beta` 路径弃用 |
 | structlog | Day 2 引入 | **推迟到 Day 5** | 先用标准库 logging 够用，避免 Day 2 引入无谓复杂度 |
 | respx | dev 依赖 | 未引入 | 直接 monkeypatch `_request`，测试更快也不依赖真实 key |
-| 推理模型 | 未考虑 | 新增 `LLM_THINKING` 配置 | GLM-4.7-Flash 思维链吃满 `max_tokens` 导致 `content` 为空 |
+| 推理模型 | 未考虑 | 新增 `LLM_EXTRA_BODY`（通用厂商参数逃生舱） | 各家关闭思维链字段不同（GLM `thinking.type` / Qwen `enable_thinking`），写死会绑死厂商 |
 | 降级判定 | 任何异常都降级 | **仅不可恢复错误才降级** | 429 会导致 `json_schema` 被永久关闭（已修 + 补测试） |
+| 重试退避 | 指数退避 1–10s | 改为 **2–30s** | 免费额度 429 常持续数秒，窗口太窄等于白重试 |
+| 模型选型 | 智谱 GLM-4.7-Flash | **改用阿里云 qwen3.6-flash** | GLM 免费额度限流频繁（1305/1302），`/api/chat` 一次打两次模型更易触顶 |
 
-**已验证**（真实 GLM 调用，非 mock）：
+**已验证**（真实阿里云调用，非 mock；3 种意图全部正确）：
 
 ```
-POST /api/chat {"user_id":1,"message":"差旅报销标准是什么？"}
-→ {"intent":"knowledge_qa","need_human":false,"model":"glm-4.7-flash",
-   "reply":"结论：当前资料中没有找到依据。..."}
+差旅报销标准是什么？      → intent=knowledge_qa    need_human=false  (29 completion tokens)
+帮我取消订单 SO-1002      → intent=task_execution  need_human=true   (63)
+我要投诉，转人工客服      → intent=human_handoff   need_human=true   (55)
 ```
+
+全程 200，无 429；DashScope 支持原生 `json_schema`，未触发降级。
+关闭思维链后 completion tokens 从 194+ 降到两位数。
 
 测试：`pytest -q` → 15 passed（无需 API Key）。
-遗留：智谱免费额度限流较频繁（429 code 1305），Day 3 需考虑给 `/api/chat` 加排队或更友好的限流提示。
 
-### 2.3 配置新增（config.py + .env.example）
+### 2.4 配置新增（config.py + .env.example）
 
 ```
 llm_api_key / llm_base_url / llm_model / llm_temperature=0.2 / llm_max_tokens=2048
 llm_timeout=60 / llm_max_retries=3
+llm_extra_body=""        # 厂商私有参数 JSON，如 {"enable_thinking": false}
 embedding_model=text-embedding-3-small / embedding_dim=1536 / embedding_base_url
 ```
+
+查可用模型：`GET https://dashscope.aliyuncs.com/compatible-mode/v1/models`。
+模型名是 `qwen3.6-flash`（带连字符），写成 `qwen3.6flash` 报 404。
 
 > 同时把 `app/models/document_chunk.py` 里硬编码的 `VECTOR_DIM = 1536` 改为从 `settings.embedding_dim` 读取，避免"换模型忘了改维度"这个必踩的坑。
 

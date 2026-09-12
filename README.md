@@ -5,7 +5,7 @@
 面向企业内部知识、客户/订单/业务数据的任务执行型 Agent：不仅回答问题，还能自主决定何时检索知识、查询业务数据、调用工具、继续执行或请求人工确认。
 
 > 目标技术栈：Python 3.12 / FastAPI / LangGraph / PostgreSQL + pgvector / Redis / MCP
-> 当前进度：**Day 2 — LLM Provider + Structured Output**（已接入智谱 GLM）
+> 当前进度：**Day 2 — LLM Provider + Structured Output**（已接入阿里云百炼 Qwen）
 
 ## Day 2：LLM 接入
 
@@ -24,21 +24,39 @@ app/llm/
 
 **结构化输出三级降级**：`response_format=json_schema`（`completions.parse`）→
 `json_object` + JSON Schema 提示 + 手动 `model_validate_json` → 抛 `LLMParseError`。
-智谱 GLM 不接受 `json_schema`，会自动落到第二级，日志有一行 warning，属正常现象。
+阿里云百炼支持原生 `json_schema`，走最优路径；智谱 GLM 不接受，会自动落到第二级，
+日志有一行 warning，属正常现象。
 
-**重试策略**：tenacity `AsyncRetrying`，只对连接/超时/429/5xx 重试，指数退避 1–10s；
+**重试策略**：tenacity `AsyncRetrying`，只对连接/超时/429/5xx 重试，指数退避 2–30s；
 关闭 SDK 自带重试（`max_retries=0`）避免重试次数翻倍。
-注意：429 属于可恢复错误，不会把 `json_schema` 永久标记为不支持。
+注意：429 属可恢复错误，不会把 `json_schema` 永久标记为不支持。
 
 ### 推理模型注意事项（踩过的坑）
 
-GLM-4.7-Flash 等**推理模型**默认会先输出思维链，把 `max_tokens` 吃光后 `content` 为空，
-表现为 `LengthFinishReasonError` 或「模型输出无法解析」。解决办法两条，缺一不可：
+推理模型（GLM-4.x / Qwen3）默认先输出思维链，可能把 `max_tokens` 吃光导致 `content` 为空，
+表现为 `LengthFinishReasonError` 或「模型输出无法解析」；即使不空也很浪费——
+实测 Qwen 回答两个字烧掉 194 个思维 token。解决办法：
 
 ```ini
-LLM_MAX_TOKENS=2048      # 留足余量
-LLM_THINKING=disabled    # 发送 extra_body={"thinking":{"type":"disabled"}}
+LLM_MAX_TOKENS=2048                                  # 留足余量
+LLM_EXTRA_BODY={"enable_thinking": false}            # 阿里云 Qwen3
+# LLM_EXTRA_BODY={"thinking": {"type": "disabled"}}  # 智谱 GLM
 ```
+
+`LLM_EXTRA_BODY` 是厂商私有参数的通用逃生舱（JSON 对象，原样并入请求体）——
+**各家关闭思维链的字段并不统一**，写死一种会绑死厂商，所以留成配置而非代码分支。
+
+### 厂商切换记录
+
+| 厂商 | base_url | 模型 | 结构化输出 | 限流 |
+| --- | --- | --- | --- | --- |
+| 阿里云百炼（当前） | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen3.6-flash` | 原生 `json_schema` | 未遇到 |
+| 智谱 GLM | `https://open.bigmodel.cn/api/paas/v4/` | `glm-4.7-flash` | 降级到 `json_object` | 免费额度卡很死，429 频繁 |
+
+GLM 免费额度会连续返回 `code 1305`（模型访问量过大）与 `1302`（账户速率限制），
+`/api/chat` 一次要打两次模型（意图 + 作答），更容易触顶，故换为阿里云。
+模型名注意是 `qwen3.6-flash`（**带连字符**），写成 `qwen3.6flash` 会 404；
+可用模型列表：`GET https://dashscope.aliyuncs.com/compatible-mode/v1/models`。
 
 ### 安全：Key 不入库
 
@@ -119,7 +137,7 @@ uvicorn app.main:app --reload
   "reply": "结论：当前资料中没有找到依据。...",
   "intent": "knowledge_qa",
   "need_human": false,
-  "model": "glm-4.7-flash"
+  "model": "qwen3.6-flash"
 }
 ```
 
@@ -154,7 +172,7 @@ psql -U postgres -h localhost -c "CREATE DATABASE enterprise_agent OWNER agent;"
 ## 里程碑
 
 - [x] Day 1：项目初始化 + FastAPI + PostgreSQL
-- [x] Day 2：LLM Provider + Structured Output（智谱 GLM 已跑通）
+- [x] Day 2：LLM Provider + Structured Output（阿里云 Qwen 已跑通）
 - [ ] Day 3：Tool Calling
 - [ ] Day 4：LangGraph State / Node / Edge
 - [ ] Day 5：Router + Executor + Validator

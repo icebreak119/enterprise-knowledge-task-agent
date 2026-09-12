@@ -77,6 +77,19 @@ def _strip_code_fence(text: str) -> str:
     return matched.group(1) if matched else text
 
 
+def _parse_extra_body(raw: str) -> dict[str, Any]:
+    """解析厂商私有参数。配置写错要立刻炸，而不是静默发出错误请求。"""
+    if not raw.strip():
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"LLM_EXTRA_BODY 不是合法 JSON：{raw!r}") from exc
+    if not isinstance(parsed, dict):
+        raise ValueError(f"LLM_EXTRA_BODY 必须是 JSON 对象，当前为 {type(parsed).__name__}：{raw!r}")
+    return parsed
+
+
 class OpenAICompatProvider:
     def __init__(self, settings: Settings | None = None) -> None:
         self._settings = settings or get_settings()
@@ -86,6 +99,8 @@ class OpenAICompatProvider:
             timeout=self._settings.llm_timeout,
             max_retries=0,  # 重试统一交给 tenacity
         )
+        # 厂商私有参数（关闭思维链等），各家字段名不统一，交给配置决定
+        self._extra_body = _parse_extra_body(self._settings.llm_extra_body)
         # None = 还没试过；True/False = 该厂商是否支持 response_format=json_schema
         self._json_schema_supported: bool | None = None
 
@@ -110,8 +125,8 @@ class OpenAICompatProvider:
         }
         if tools:
             kwargs["tools"] = tools
-        if self._settings.llm_thinking in ("enabled", "disabled"):
-            kwargs["extra_body"] = {"thinking": {"type": self._settings.llm_thinking}}
+        if self._extra_body:
+            kwargs["extra_body"] = self._extra_body
 
         try:
             if response_model is not None:
@@ -189,7 +204,8 @@ class OpenAICompatProvider:
         async for attempt in AsyncRetrying(
             reraise=True,
             stop=stop_after_attempt(self._settings.llm_max_retries),
-            wait=wait_exponential(multiplier=1, min=1, max=10),
+            # 免费额度的 429 常常持续数秒，退避窗口太窄等于白重试
+            wait=wait_exponential(multiplier=2, min=2, max=30),
             retry=retry_if_exception(_should_retry),
         ):
             with attempt:

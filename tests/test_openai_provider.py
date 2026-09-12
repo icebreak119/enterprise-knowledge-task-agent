@@ -5,6 +5,7 @@ from app.llm.base import ChatMessage
 from app.llm.errors import LLMRateLimitError, LLMParseError
 from app.llm.openai_provider import (
     OpenAICompatProvider,
+    _parse_extra_body,
     _should_retry,
     _to_llm_error,
 )
@@ -115,6 +116,35 @@ async def test_rate_limit_does_not_disable_json_schema(monkeypatch):
             [ChatMessage(role="user", content="x")], response_model=IntentResult
         )
     assert provider._json_schema_supported is None
+
+
+async def test_extra_body_merged(monkeypatch):
+    """厂商私有参数应原样并入请求体（如 Qwen 的 enable_thinking）。"""
+    provider = OpenAICompatProvider(
+        Settings(
+            llm_api_key="test-key",
+            llm_model="test-model",
+            llm_max_retries=1,
+            llm_extra_body='{"enable_thinking": false}',
+        )
+    )
+    seen: dict = {}
+
+    async def fake_request(self, method, **kwargs):
+        seen.update(kwargs)
+        return _Raw(_Message(content="ok"))
+
+    monkeypatch.setattr(OpenAICompatProvider, "_request", fake_request)
+    await provider.achat([ChatMessage(role="user", content="x")])
+    assert seen["extra_body"] == {"enable_thinking": False}
+
+
+def test_invalid_extra_body_fails_fast():
+    assert _parse_extra_body("") == {}
+    with pytest.raises(ValueError):
+        _parse_extra_body("{not json}")
+    with pytest.raises(ValueError):
+        _parse_extra_body("[1, 2]")
 
 
 def test_retry_policy():
