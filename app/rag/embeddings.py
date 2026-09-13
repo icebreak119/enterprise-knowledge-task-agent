@@ -9,7 +9,15 @@ from __future__ import annotations
 
 from typing import Protocol
 
+from tenacity import (
+    AsyncRetrying,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential,
+)
+
 from app.core.config import Settings, get_settings
+from app.llm.openai_provider import _should_retry
 
 
 class Embedder(Protocol):
@@ -62,7 +70,37 @@ class OpenAICompatEmbedder:
         Raises:
             ValueError: 维度与配置不符。
         """
-        raise NotImplementedError
+        if not texts:
+            return []
+
+        vectors: list[list[float] | None] = [None] * len(texts)
+        for start in range(0, len(texts), self._batch_size):
+            batch = texts[start : start + self._batch_size]
+            raw = await self._request(batch)
+            for item in raw.data:
+                vector = list(item.embedding)
+                if len(vector) != self.dim:
+                    raise ValueError(
+                        f"embedding 维度不符：模型 {self._settings.embedding_model} "
+                        f"实测 {len(vector)} 维，配置 embedding_dim={self.dim}。"
+                        "请同步 settings.embedding_dim 并重建向量列。"
+                    )
+                vectors[start + item.index] = vector
+
+        return [vector for vector in vectors if vector is not None]
+
+    async def _request(self, batch: list[str]):
+        async for attempt in AsyncRetrying(
+            reraise=True,
+            stop=stop_after_attempt(self._settings.llm_max_retries),
+            # 与 LLM 侧保持一致：免费额度 429 常持续数秒，窗口太窄等于白重试
+            wait=wait_exponential(multiplier=2, min=2, max=30),
+            retry=retry_if_exception(_should_retry),
+        ):
+            with attempt:
+                return await self._client.embeddings.create(
+                    model=self._settings.embedding_model, input=batch
+                )
 
 
 def _build_client(settings: Settings):

@@ -9,9 +9,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
+from app.models.document import Document
+from app.models.document_chunk import DocumentChunk
+from app.rag.chunker import chunk_document
 from app.rag.embeddings import Embedder, OpenAICompatEmbedder
+from app.rag.loader import load_document
 
 
 @dataclass(frozen=True)
@@ -66,4 +72,52 @@ async def ingest_file(
         embedder: 向量化实现；为 None 时用 `OpenAICompatEmbedder`。
         version: 文档版本，来自文件名或调用方；None 时按"无版本"处理。
     """
-    raise NotImplementedError
+    settings = get_settings()
+    if not settings.embedding_enabled:
+        raise RuntimeError("未配置 LLM_API_KEY，无法生成向量；拒绝写入空 embedding。")
+
+    document = load_document(path)
+    chunks = chunk_document(document)
+    if not chunks:
+        raise ValueError(f"文档没有切出任何内容，解析可能失败：{path}")
+
+    embedder = embedder or OpenAICompatEmbedder(settings)
+    vectors = await embedder.aembed([chunk.content for chunk in chunks])
+
+    source = str(path)
+    existing = (
+        await session.execute(select(Document).where(Document.source == source))
+    ).scalar_one_or_none()
+
+    if existing is not None and existing.version == version:
+        count = (
+            await session.execute(
+                select(func.count())
+                .select_from(DocumentChunk)
+                .where(DocumentChunk.document_id == existing.id)
+            )
+        ).scalar_one()
+        return IngestResult(existing.id, source, count, skipped=True)
+
+    if existing is None:
+        existing = Document(name=document.title, source=source, version=version)
+        session.add(existing)
+        await session.flush()
+    else:
+        # 换版本 = 文档已更新：旧向量必须删，否则检索会召回过期条款
+        await session.execute(
+            delete(DocumentChunk).where(DocumentChunk.document_id == existing.id)
+        )
+        existing.version = version
+
+    session.add_all(
+        DocumentChunk(
+            document_id=existing.id,
+            content=chunk.content,
+            metadata_=chunk.to_metadata(),
+            embedding=vector,
+        )
+        for chunk, vector in zip(chunks, vectors, strict=True)
+    )
+    await session.commit()
+    return IngestResult(existing.id, source, len(chunks), skipped=False)

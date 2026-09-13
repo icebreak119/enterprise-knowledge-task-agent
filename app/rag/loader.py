@@ -6,10 +6,13 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
 SUPPORTED_SUFFIXES = {".md", ".txt", ".markdown"}
+
+_H1_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
 
 
 @dataclass(frozen=True)
@@ -44,5 +47,24 @@ def load_document(path: str | Path) -> LoadedDocument:
     Raises:
         FileNotFoundError: 路径不存在。
         ValueError: 后缀不支持。
+        UnicodeDecodeError: 非 UTF-8（不做静默忽略，否则会得到肉眼看不见的乱码 chunk）。
     """
-    raise NotImplementedError
+    file_path = Path(path)
+    if not file_path.is_file():
+        raise FileNotFoundError(f"文档不存在：{file_path}")
+
+    suffix = file_path.suffix.lower()
+    if suffix not in SUPPORTED_SUFFIXES:
+        raise ValueError(
+            f"暂不支持的文档类型 {suffix!r}，当前支持：{sorted(SUPPORTED_SUFFIXES)}"
+        )
+
+    text = file_path.read_text(encoding="utf-8")
+    matched = _H1_RE.search(text)
+
+    return LoadedDocument(
+        source=str(path),
+        title=matched.group(1) if matched else file_path.stem,
+        text=text,
+        metadata={"suffix": suffix, "bytes": str(file_path.stat().st_size)},
+    )
