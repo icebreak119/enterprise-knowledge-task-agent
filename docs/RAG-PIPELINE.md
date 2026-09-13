@@ -16,7 +16,7 @@
 | 2 | 切片 | ✅ | `app/rag/chunker.py` | 先按标题分段再滑窗，绝不跨标题；表格整体成块；标题路径写进正文 |
 | 3 | 向量化 | ✅ | `app/rag/embeddings.py` | 走 OpenAI 兼容 `/embeddings`；批量保序；首次调用校验维度 |
 | 4 | 落库 | ✅ | `app/rag/ingest.py` | 幂等（同 source+version 跳过）；换版本先删旧切片 |
-| 5 | 建 HNSW 索引 | ⬜ | 未开始 | 切片上量后必须建，否则全表扫；当前 30 片看不出差异 |
+| 5 | 建 HNSW 索引 | ✅ | `alembic/versions/56eaa6294d23` | `vector_cosine_ops`，`(m=16, ef_construction=64)`；幂等迁移 |
 | 6 | 评测集与基线 | ✅ | `evals/cases.jsonl`、`scripts/run_eval.py` | 20 题已标注，基线已跑，见下方数字 |
 
 **当前语料**：`data/policies/` 下 V2.0（现行）+ V1.1（已废止），共 30 个切片，1024 维。

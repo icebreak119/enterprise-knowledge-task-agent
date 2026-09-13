@@ -40,6 +40,27 @@ def test_alembic_has_single_head():
 
     # 用绝对路径：否则从仓库根目录以外跑 pytest 会找不到配置
     ini_path = Path(__file__).resolve().parents[1] / "alembic.ini"
-    script = ScriptDirectory.from_config(Config(str(ini_path)))
-    heads = script.get_heads()
+    script_dir = ScriptDirectory.from_config(Config(str(ini_path)))
+    heads = script_dir.get_heads()
     assert len(heads) == 1, f"存在多个 head：{heads}"
+
+
+async def test_hnsw_index_exists(db_session):
+    """HNSW 索引必须存在，否则数据量上来后的检索性能不可接受。"""
+    try:
+        rows = (
+            await db_session.execute(
+                text(
+                    "SELECT indexdef FROM pg_indexes "
+                    "WHERE tablename = 'document_chunks' AND indexdef LIKE '%hnsw%'"
+                )
+            )
+        ).fetchall()
+    except Exception as exc:  # noqa: BLE001
+        pytest.skip(f"无法查询索引信息：{exc}")
+
+    assert len(rows) >= 1, (
+        "document_chunks 缺少 HNSW 索引，请执行 alembic upgrade head"
+    )
+    assert "hnsw" in rows[0][0]
+    assert "vector_cosine_ops" in rows[0][0]
