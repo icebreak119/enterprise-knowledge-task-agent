@@ -1,0 +1,20 @@
+{"id": "warranty-flagship", "question": "旗舰型设备整机保修多久？", "category": "direct", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["36"], "notes": "表格直接读出版"}
+{"id": "warranty-standard-main", "question": "标准型设备的主要部件保修多久？", "category": "direct", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["24"], "notes": ""}
+{"id": "warranty-entry-wear", "question": "入门型设备的易损件保修吗？", "category": "direct", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["不保修"], "notes": ""}
+{"id": "warranty-third-party", "question": "第三方配件的保修怎么算？", "category": "direct", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["厂家"], "notes": ""}
+{"id": "exclusion-human", "question": "人为损坏能免费保修吗？", "category": "direct", "evidence": [["V2.0", "2.2 保修除外情形"]], "expected_version": "V2.0", "answer_keywords": ["不"], "notes": ""}
+{"id": "return-7day-freight", "question": "7 天无理由退货的运费由谁承担？", "category": "direct", "evidence": [["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "answer_keywords": ["客户"], "notes": ""}
+{"id": "exchange-15day", "question": "15 天内出现非人为性能故障能换货吗？", "category": "direct", "evidence": [["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "answer_keywords": ["换货"], "notes": ""}
+{"id": "complaint-first-response", "question": "客户投诉后多久给出初步处理意见？", "category": "direct", "evidence": [["V2.0", "五、投诉处理流程"]], "expected_version": "V2.0", "answer_keywords": ["24 小时"], "notes": ""}
+{"id": "trap-emergency-onsite", "question": "紧急故障多久到达现场？", "category": "version_trap", "evidence": [["V2.0", "四、服务响应标准"]], "expected_version": "V2.0", "answer_keywords": ["4 小时"], "notes": "V1.1 为 6 小时，引错即版本事故"}
+{"id": "trap-refund-days", "question": "退货审核通过后多久能收到退款？", "category": "version_trap", "evidence": [["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "answer_keywords": ["3-5"], "notes": "V1.1 为 7 个工作日"}
+{"id": "trap-flagship-months", "question": "旗舰型设备保修几个月？", "category": "version_trap", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["36"], "notes": "V1.1 为 24 个月"}
+{"id": "trap-entry-wear-months", "question": "入门型设备易损件保修几个月？", "category": "version_trap", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["不保修"], "notes": "V1.1 为保修 3 个月"}
+{"id": "trap-important-onsite", "question": "重要故障多久到达现场？", "category": "version_trap", "evidence": [["V2.0", "四、服务响应标准"]], "expected_version": "V2.0", "answer_keywords": ["8 小时"], "notes": "两版本一致，用于区分真陷阱"}
+{"id": "trap-current-version", "question": "现在执行的是哪个版本的售后制度？", "category": "version_trap", "evidence": [["V2.0", "六、版本修订记录"]], "expected_version": "V2.0", "answer_keywords": ["V2.0"], "notes": ""}
+{"id": "refuse-team-building", "question": "公司明年团建去哪里？预算多少？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": "库里完全没有"}
+{"id": "refuse-bonus", "question": "员工年终奖怎么计算？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": ""}
+{"id": "refuse-wifi", "question": "办公室 WiFi 密码是多少？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": ""}
+{"id": "refuse-hiring", "question": "公司的招聘流程是怎样的？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": ""}
+{"id": "cross-exchange-condition", "question": "买了标准型设备，10 个月后出现非人为性能故障，能换货吗？", "category": "cross_section", "evidence": [["V2.0", "2.1 保修期限与范围"], ["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "notes": "需同时用到保修期与退换货两条"}
+{"id": "cross-complaint-appeal", "question": "客户对质量纠纷处理结果有异议，多久能拿到最终答复？", "category": "cross_section", "evidence": [["V2.0", "五、投诉处理流程"]], "expected_version": "V2.0", "answer_keywords": ["7 个工作日"], "notes": ""}

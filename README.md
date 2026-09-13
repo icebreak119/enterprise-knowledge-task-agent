@@ -132,6 +132,21 @@ Q: 旗舰型设备整机保修多久？
 
 > 阈值 `RAG_MAX_DISTANCE` 目前是保守初值，**必须用评测集标定**才作数。
 
+## 效果评测
+
+```bash
+python scripts/run_eval.py                 # 只评检索，快，不需要起服务
+python scripts/run_eval.py --mode full     # 走真实 /api/chat，连引用一起评
+```
+
+20 道题分四类：直接问答、版本陷阱、应拒答、跨段证据。
+指标：`recall_at_k` / `version_accuracy` / `refuse_accuracy` / `citation_accuracy`。
+
+**当前基线（top_k=5）**：recall 0.975、version **0.75**、refuse 1.0、citation 1.0，20 题失败 5 条。
+
+`version_accuracy 0.75` 就是"过期政策被优先召回"这个问题的量化结果——
+5 道题的 top1 命中了已废止的 V1.1。后续所有优化都拿这个数字对照。
+
 ## 目录结构
 
 ```

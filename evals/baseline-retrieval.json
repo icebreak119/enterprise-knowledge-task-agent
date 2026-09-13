@@ -1,0 +1,214 @@
+{
+  "mode": "retrieval",
+  "top_k": 5,
+  "summary": {
+    "cases": 20,
+    "recall_at_k": 0.975,
+    "version_accuracy": 0.75,
+    "refuse_accuracy": 1.0,
+    "citation_accuracy": null,
+    "failures": 5
+  },
+  "cases": [
+    {
+      "id": "warranty-flagship",
+      "category": "direct",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.18008891581428477
+    },
+    {
+      "id": "warranty-standard-main",
+      "category": "direct",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.21972713529250398
+    },
+    {
+      "id": "warranty-entry-wear",
+      "category": "direct",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.21516141936664013
+    },
+    {
+      "id": "warranty-third-party",
+      "category": "direct",
+      "recall": 1.0,
+      "version_ok": false,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V1.1",
+      "top1_distance": 0.2867734432220459
+    },
+    {
+      "id": "exclusion-human",
+      "category": "direct",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.28128686920247903
+    },
+    {
+      "id": "return-7day-freight",
+      "category": "direct",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.2930485780864094
+    },
+    {
+      "id": "exchange-15day",
+      "category": "direct",
+      "recall": 1.0,
+      "version_ok": false,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V1.1",
+      "top1_distance": 0.2873276472091675
+    },
+    {
+      "id": "complaint-first-response",
+      "category": "direct",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.2051338675697949
+    },
+    {
+      "id": "trap-emergency-onsite",
+      "category": "version_trap",
+      "recall": 1.0,
+      "version_ok": false,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V1.1",
+      "top1_distance": 0.2663871268514626
+    },
+    {
+      "id": "trap-refund-days",
+      "category": "version_trap",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.41316958744344534
+    },
+    {
+      "id": "trap-flagship-months",
+      "category": "version_trap",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.2279754877090454
+    },
+    {
+      "id": "trap-entry-wear-months",
+      "category": "version_trap",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.19737613201141357
+    },
+    {
+      "id": "trap-important-onsite",
+      "category": "version_trap",
+      "recall": 1.0,
+      "version_ok": false,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V1.1",
+      "top1_distance": 0.24720387880836803
+    },
+    {
+      "id": "trap-current-version",
+      "category": "version_trap",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.21978569030761164
+    },
+    {
+      "id": "refuse-team-building",
+      "category": "should_refuse",
+      "recall": 1.0,
+      "version_ok": null,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.781683172978975
+    },
+    {
+      "id": "refuse-bonus",
+      "category": "should_refuse",
+      "recall": 1.0,
+      "version_ok": null,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V1.1",
+      "top1_distance": 0.6686876513138209
+    },
+    {
+      "id": "refuse-wifi",
+      "category": "should_refuse",
+      "recall": 1.0,
+      "version_ok": null,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.6896464434160721
+    },
+    {
+      "id": "refuse-hiring",
+      "category": "should_refuse",
+      "recall": 1.0,
+      "version_ok": null,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.5306006110430492
+    },
+    {
+      "id": "cross-exchange-condition",
+      "category": "cross_section",
+      "recall": 0.5,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.2984374552499487
+    },
+    {
+      "id": "cross-complaint-appeal",
+      "category": "cross_section",
+      "recall": 1.0,
+      "version_ok": true,
+      "refuse_ok": true,
+      "citation_ok": null,
+      "top1_version": "V2.0",
+      "top1_distance": 0.22389411926268976
+    }
+  ]
+}
