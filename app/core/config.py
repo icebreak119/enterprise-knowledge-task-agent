@@ -1,13 +1,18 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# 相对路径会按"当前工作目录"解析，换目录跑（CI、别的机器、别的终端）就读不到 .env。
+# 用绝对路径锚定到仓库根目录，保证在哪里启动行为一致。
+ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 
 class Settings(BaseSettings):
     """应用配置，通过环境变量或项目根目录下 .env 覆盖。"""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+        env_file=str(ENV_FILE), env_file_encoding="utf-8", extra="ignore"
     )
 
     app_name: str = "Enterprise Agent"

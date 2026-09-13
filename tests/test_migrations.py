@@ -33,10 +33,13 @@ async def test_schema_matches_models(db_session):
 
 def test_alembic_has_single_head():
     """只能有一个 head，多个分支会让 upgrade 行为不确定。"""
+    from pathlib import Path
+
     from alembic.config import Config
     from alembic.script import ScriptDirectory
 
-    config = Config("alembic.ini")
-    script = ScriptDirectory.from_config(config)
+    # 用绝对路径：否则从仓库根目录以外跑 pytest 会找不到配置
+    ini_path = Path(__file__).resolve().parents[1] / "alembic.ini"
+    script = ScriptDirectory.from_config(Config(str(ini_path)))
     heads = script.get_heads()
     assert len(heads) == 1, f"存在多个 head：{heads}"
