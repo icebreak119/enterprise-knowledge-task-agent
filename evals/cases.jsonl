@@ -6,15 +6,43 @@
 {"id": "return-7day-freight", "question": "7 天无理由退货的运费由谁承担？", "category": "direct", "evidence": [["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "answer_keywords": ["客户"], "notes": ""}
 {"id": "exchange-15day", "question": "15 天内出现非人为性能故障能换货吗？", "category": "direct", "evidence": [["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "answer_keywords": ["换货"], "notes": ""}
 {"id": "complaint-first-response", "question": "客户投诉后多久给出初步处理意见？", "category": "direct", "evidence": [["V2.0", "五、投诉处理流程"]], "expected_version": "V2.0", "answer_keywords": ["24 小时"], "notes": ""}
+{"id": "warranty-standard-wear", "question": "标准型设备的易损件保修多久？", "category": "direct", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["3 个月"], "notes": "表格细节，需精确定位到行"}
+{"id": "warranty-flagship-main", "question": "旗舰型设备的主要部件保修多久？", "category": "direct", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["36"], "notes": ""}
+{"id": "warranty-entry-whole", "question": "入门型设备整机保修多久？", "category": "direct", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["12"], "notes": ""}
+{"id": "sla-normal-onsite", "question": "一般故障到达现场的时限是多久？", "category": "direct", "evidence": [["V2.0", "四、服务响应标准"]], "expected_version": "V2.0", "answer_keywords": ["24 小时"], "notes": ""}
+{"id": "sla-important-response", "question": "重要故障多久响应？", "category": "direct", "evidence": [["V2.0", "四、服务响应标准"]], "expected_version": "V2.0", "answer_keywords": ["30 分钟"], "notes": ""}
+{"id": "sla-emergency-response", "question": "紧急故障多久响应？", "category": "direct", "evidence": [["V2.0", "四、服务响应标准"]], "expected_version": "V2.0", "answer_keywords": ["10 分钟"], "notes": "响应与到达现场是两个数，容易混"}
+{"id": "complaint-inspection", "question": "质量纠纷的检测报告多久出具？", "category": "direct", "evidence": [["V2.0", "五、投诉处理流程"]], "expected_version": "V2.0", "answer_keywords": ["3 个工作日"], "notes": ""}
+{"id": "scope-channels", "question": "本制度适用于哪些销售渠道？", "category": "direct", "evidence": [["V2.0", "一、总则"]], "expected_version": "V2.0", "notes": "适用范围在总则，不在保修章节"}
+{"id": "exclusion-battery", "question": "电池自然衰减能免费保修吗？", "category": "direct", "evidence": [["V2.0", "2.2 保修除外情形"]], "expected_version": "V2.0", "answer_keywords": ["不"], "notes": ""}
+{"id": "exclusion-serial", "question": "产品序列号被涂改还能享受保修吗？", "category": "direct", "evidence": [["V2.0", "2.2 保修除外情形"]], "expected_version": "V2.0", "answer_keywords": ["不"], "notes": ""}
+{"id": "return-condition", "question": "7 天无理由退货需要满足什么条件？", "category": "direct", "evidence": [["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "answer_keywords": ["7 日"], "notes": ""}
+{"id": "para-flagship-years", "question": "我买的旗舰机坏了，保修几年？", "category": "paraphrase", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["3"], "notes": "口语化表述，检验语义泛化"}
+{"id": "para-refund-arrive", "question": "退货的钱什么时候能到账？", "category": "paraphrase", "evidence": [["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "answer_keywords": ["3-5"], "notes": "与 trap-refund-days 同义不同表述"}
+{"id": "para-serviceman", "question": "设备出问题了，师傅多久能上门？", "category": "paraphrase", "evidence": [["V2.0", "四、服务响应标准"]], "expected_version": "V2.0", "notes": "问法模糊，未指明故障等级"}
 {"id": "trap-emergency-onsite", "question": "紧急故障多久到达现场？", "category": "version_trap", "evidence": [["V2.0", "四、服务响应标准"]], "expected_version": "V2.0", "answer_keywords": ["4 小时"], "notes": "V1.1 为 6 小时，引错即版本事故"}
 {"id": "trap-refund-days", "question": "退货审核通过后多久能收到退款？", "category": "version_trap", "evidence": [["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "answer_keywords": ["3-5"], "notes": "V1.1 为 7 个工作日"}
 {"id": "trap-flagship-months", "question": "旗舰型设备保修几个月？", "category": "version_trap", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["36"], "notes": "V1.1 为 24 个月"}
 {"id": "trap-entry-wear-months", "question": "入门型设备易损件保修几个月？", "category": "version_trap", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["不保修"], "notes": "V1.1 为保修 3 个月"}
 {"id": "trap-important-onsite", "question": "重要故障多久到达现场？", "category": "version_trap", "evidence": [["V2.0", "四、服务响应标准"]], "expected_version": "V2.0", "answer_keywords": ["8 小时"], "notes": "两版本一致，用于区分真陷阱"}
 {"id": "trap-current-version", "question": "现在执行的是哪个版本的售后制度？", "category": "version_trap", "evidence": [["V2.0", "六、版本修订记录"]], "expected_version": "V2.0", "answer_keywords": ["V2.0"], "notes": ""}
-{"id": "refuse-team-building", "question": "公司明年团建去哪里？预算多少？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": "库里完全没有"}
+{"id": "trap-standard-whole", "question": "标准型设备整机保修多久？", "category": "version_trap", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["24"], "notes": "两版本一致，对照组"}
+{"id": "trap-flagship-2or3", "question": "旗舰设备保修到底是 2 年还是 3 年？", "category": "version_trap", "evidence": [["V2.0", "2.1 保修期限与范围"]], "expected_version": "V2.0", "answer_keywords": ["3"], "notes": "诱导性问法，2 年是旧版数字"}
+{"id": "trap-refund-latest", "question": "退款时效的最新规定是几个工作日？", "category": "version_trap", "evidence": [["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "answer_keywords": ["3-5"], "notes": ""}
+{"id": "refuse-team-building", "question": "公司明年团建去哪里？预算多少？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": "完全无关"}
 {"id": "refuse-bonus", "question": "员工年终奖怎么计算？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": ""}
 {"id": "refuse-wifi", "question": "办公室 WiFi 密码是多少？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": ""}
 {"id": "refuse-hiring", "question": "公司的招聘流程是怎样的？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": ""}
+{"id": "refuse-price", "question": "这款旗舰设备售价多少钱？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": "主题相关但制度里没有价格"}
+{"id": "refuse-repair-cost", "question": "过了保修期维修要多少钱？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": "只提有偿维修，未给价格"}
+{"id": "refuse-overseas", "question": "海外购买的设备能在国内保修吗？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": "适用范围未覆盖海外"}
+{"id": "refuse-hotline", "question": "客服中心的联系电话是多少？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": ""}
+{"id": "refuse-v3", "question": "V3.0 制度什么时候发布？", "category": "should_refuse", "evidence": [], "should_refuse": true, "notes": "未来版本，库里不可能有"}
+{"id": "hist-v11-flagship", "question": "V1.1 版本里旗舰型设备保修多久？", "category": "historical_lookup", "evidence": [["V1.1", "2.1 保修期限与范围"]], "expected_version": "V1.1", "answer_keywords": ["24"], "notes": "已知盲区：降权后旧版本更难被找到"}
+{"id": "hist-v11-refund", "question": "旧版本制度里退款要几个工作日？", "category": "historical_lookup", "evidence": [["V1.1", "三、退换货政策"]], "expected_version": "V1.1", "answer_keywords": ["7"], "notes": "同上，用于量化该代价"}
+{"id": "hist-v11-emergency", "question": "已废止的 V1.1 中紧急故障多久到现场？", "category": "historical_lookup", "evidence": [["V1.1", "四、服务响应标准"]], "expected_version": "V1.1", "answer_keywords": ["6"], "notes": ""}
 {"id": "cross-exchange-condition", "question": "买了标准型设备，10 个月后出现非人为性能故障，能换货吗？", "category": "cross_section", "evidence": [["V2.0", "2.1 保修期限与范围"], ["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "notes": "需同时用到保修期与退换货两条"}
 {"id": "cross-complaint-appeal", "question": "客户对质量纠纷处理结果有异议，多久能拿到最终答复？", "category": "cross_section", "evidence": [["V2.0", "五、投诉处理流程"]], "expected_version": "V2.0", "answer_keywords": ["7 个工作日"], "notes": ""}
+{"id": "cross-return-or-exchange", "question": "客户签收第 10 天出现质量问题，能退货还是换货？", "category": "cross_section", "evidence": [["V2.0", "三、退换货政策"]], "expected_version": "V2.0", "answer_keywords": ["换货"], "notes": "7 天已过、15 天未过，需判断"}
+{"id": "cross-lightning", "question": "设备在保修期内因雷击损坏，能免费保修吗？", "category": "cross_section", "evidence": [["V2.0", "2.2 保修除外情形"]], "expected_version": "V2.0", "answer_keywords": ["不"], "notes": "不可抗力属除外情形，与保修期无关"}
+{"id": "cross-emergency-then-appeal", "question": "紧急故障处理后客户仍不满意，多久能拿到最终结果？", "category": "cross_section", "evidence": [["V2.0", "五、投诉处理流程"]], "expected_version": "V2.0", "answer_keywords": ["7 个工作日"], "notes": "需从故障等级跳到投诉流程"}

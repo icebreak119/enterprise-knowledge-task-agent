@@ -24,15 +24,20 @@ def test_load_bundled_cases():
 
     root = Path(__file__).resolve().parents[1]
     cases = load_cases(root / "evals" / "cases.jsonl")
-    assert len(cases) >= 20
+    assert len(cases) >= 40
     assert all(c.id and c.question for c in cases)
     # 题型要齐，否则指标覆盖不到
     assert {c.category for c in cases} == {
         "direct",
+        "paraphrase",
         "version_trap",
         "should_refuse",
+        "historical_lookup",
         "cross_section",
     }
+    # id 不能重复，否则失败样例定位不到
+    ids = [c.id for c in cases]
+    assert len(ids) == len(set(ids))
 
 
 def test_chunk_matches_requires_all_needles():
