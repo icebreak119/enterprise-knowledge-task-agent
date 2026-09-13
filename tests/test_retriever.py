@@ -4,6 +4,7 @@ import pytest
 
 from app.rag.retriever import (
     RetrievedChunk,
+    apply_version_penalty,
     build_context,
     cited_chunk_ids,
     search,
@@ -11,7 +12,9 @@ from app.rag.retriever import (
 )
 
 
-def _chunk(chunk_id: int, distance: float, version: str = "V2.0") -> RetrievedChunk:
+def _chunk(
+    chunk_id: int, distance: float, version: str = "V2.0", status: str = "active"
+) -> RetrievedChunk:
     return RetrievedChunk(
         chunk_id=chunk_id,
         content=f"【制度】条款内容 {chunk_id}",
@@ -19,7 +22,9 @@ def _chunk(chunk_id: int, distance: float, version: str = "V2.0") -> RetrievedCh
         title="售后制度",
         section_path="二、保修服务政策",
         version=version,
+        status=status,
         distance=distance,
+        penalized_distance=distance,
     )
 
 
@@ -59,6 +64,38 @@ def test_cited_chunk_ids_ignores_other_numbers():
     assert cited_chunk_ids("保修 36 个月") == set()
 
 
+def test_penalty_pushes_deprecated_below_active():
+    """废止版本即使语义更近，也要排在现行版本之后。"""
+    old = _chunk(9, 0.25, "V1.1", "deprecated")
+    current = _chunk(20, 0.26, "V2.0", "active")
+
+    ranked = apply_version_penalty([old, current], 0.15)
+    assert [c.chunk_id for c in ranked] == [20, 9]
+
+
+def test_penalty_keeps_original_distance_intact():
+    """惩罚只影响排序，不能篡改原始距离——拒答阈值和分析都依赖它。"""
+    old = _chunk(9, 0.25, "V1.1", "deprecated")
+    ranked = apply_version_penalty([old], 0.15)
+    assert ranked[0].distance == 0.25
+    assert ranked[0].penalized_distance == 0.40
+
+
+def test_penalty_zero_keeps_original_order():
+    old = _chunk(9, 0.25, "V1.1", "deprecated")
+    current = _chunk(20, 0.26, "V2.0", "active")
+    ranked = apply_version_penalty([current, old], 0)
+    assert [c.chunk_id for c in ranked] == [20, 9]
+
+
+def test_deprecated_is_not_deleted_by_penalty():
+    """降权不是删除：废止版本仍要留在结果里，否则查不到历史条款。"""
+    old = _chunk(9, 0.25, "V1.1", "deprecated")
+    ranked = apply_version_penalty([old], 0.15)
+    assert len(ranked) == 1
+    assert ranked[0].is_deprecated
+
+
 async def test_search_returns_results_sorted_by_distance():
     """集成测试：需要本机 PostgreSQL 与 embedding 接口，连不上就跳过。"""
     from sqlalchemy import text
@@ -78,5 +115,8 @@ async def test_search_returns_results_sorted_by_distance():
         pytest.skip("库里没有切片，先跑 scripts/ingest_corpus.py")
 
     assert len(chunks) <= 3
-    assert [c.distance for c in chunks] == sorted(c.distance for c in chunks)
+    # 排序依据是惩罚后距离；原始距离不再单调（废止版本会被压下去）
+    assert [c.penalized_distance for c in chunks] == sorted(
+        c.penalized_distance for c in chunks
+    )
     assert all(c.chunk_id and c.content for c in chunks)

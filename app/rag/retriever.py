@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +38,15 @@ class RetrievedChunk:
     title: str
     section_path: str
     version: str | None
-    distance: float
+    status: str = "active"
+    # 原始余弦距离：用于拒答阈值与事后分析，不因降权而改变
+    distance: float = 0.0
+    # 排序用距离：废止版本会被加上惩罚，仅影响顺序
+    penalized_distance: float = 0.0
+
+    @property
+    def is_deprecated(self) -> bool:
+        return self.status == "deprecated"
 
 
 async def search(
@@ -75,18 +83,20 @@ async def search(
                        coalesce(c.metadata ->> 'title', '')        as title,
                        coalesce(c.metadata ->> 'section_path', '') as section_path,
                        d.version,
+                       d.status,
                        c.embedding <=> :vec                         as distance
                 from document_chunks c
                 join documents d on d.id = c.document_id
                 order by c.embedding <=> :vec
-                limit :top_k
+                limit :limit
                 """
             ),
-            {"vec": str(vectors[0]), "top_k": top_k},
+            # 多取一些：降权后废止版本会被挤下去，只取 top_k 会漏掉现行版本
+            {"vec": str(vectors[0]), "limit": top_k * settings.rag_oversample},
         )
     ).fetchall()
 
-    return [
+    chunks = [
         RetrievedChunk(
             chunk_id=row.id,
             content=row.content,
@@ -94,10 +104,36 @@ async def search(
             title=row.title,
             section_path=row.section_path,
             version=row.version,
+            status=row.status or "active",
             distance=float(row.distance),
+            penalized_distance=float(row.distance),
         )
         for row in rows
     ]
+    return apply_version_penalty(chunks, settings.rag_deprecated_penalty)[:top_k]
+
+
+def apply_version_penalty(
+    chunks: list[RetrievedChunk], penalty: float
+) -> list[RetrievedChunk]:
+    """给已废止版本的切片加距离惩罚后重排。
+
+    为什么要重排而不是直接过滤掉废止版本：过滤会让"旧版本说过什么"彻底查不到，
+    而这个场景里对比新旧差异恰恰是有价值的。降权则保留可追溯性，
+    只是不再让它抢在现行版本前面。
+
+    penalty 是可调参数，它本身就是实验结果——需要用评测集扫一遍找合适的值。
+    """
+    if penalty <= 0:
+        return list(chunks)
+
+    penalized = [
+        replace(chunk, penalized_distance=chunk.distance + penalty)
+        if chunk.is_deprecated
+        else chunk
+        for chunk in chunks
+    ]
+    return sorted(penalized, key=lambda chunk: chunk.penalized_distance)
 
 
 def build_context(chunks: list[RetrievedChunk]) -> str:

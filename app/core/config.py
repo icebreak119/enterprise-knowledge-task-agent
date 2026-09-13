@@ -52,6 +52,11 @@ class Settings(BaseSettings):
     # 余弦距离阈值：超过则认为"库里没有足够相近的资料"→ 拒答。
     # 这是保守初值，必须由评测集的距离分布标定后才算数。
     rag_max_distance: float = 0.5
+    # 已废止版本切片的距离惩罚：降权但不删除，保留"旧版本说过什么"的可追溯性。
+    # 这个值应由评测集扫参确定，不是拍脑袋的最优值。
+    rag_deprecated_penalty: float = 0.15
+    # 降权后废止版本会被挤下去，因此需要多召回一些再重排
+    rag_oversample: int = 3
 
     @property
     def llm_enabled(self) -> bool:

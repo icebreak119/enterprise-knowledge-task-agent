@@ -27,12 +27,18 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CASES = ROOT / "evals" / "cases.jsonl"
 
 
-async def _run_retrieval(cases: list[EvalCase], top_k: int) -> list[CaseResult]:
+async def _run_retrieval(
+    cases: list[EvalCase], top_k: int, penalty: float | None = None
+) -> list[CaseResult]:
     settings = get_settings()
+    if penalty is not None:
+        settings = settings.model_copy(
+            update={"rag_deprecated_penalty": penalty}
+        )
     results: list[CaseResult] = []
     async with async_session_factory() as session:
         for case in cases:
-            retrieved = await search(session, case.question, top_k=top_k)
+            retrieved = await search(session, case.question, top_k=top_k, settings=settings)
             refused = should_refuse(retrieved, settings.rag_max_distance)
             results.append(evaluate_retrieval(case, retrieved, refused))
     return results
@@ -98,6 +104,12 @@ async def main() -> int:
     parser.add_argument("--top-k", type=int, default=None)
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
     parser.add_argument("--json-out", default=None)
+    parser.add_argument(
+        "--penalty",
+        type=float,
+        default=None,
+        help="覆盖 rag_deprecated_penalty，用于扫参看敏感度",
+    )
     args = parser.parse_args()
 
     cases = load_cases(args.cases)
@@ -105,7 +117,7 @@ async def main() -> int:
     print(f"载入 {len(cases)} 道题")
 
     if args.mode == "retrieval":
-        results = await _run_retrieval(cases, top_k)
+        results = await _run_retrieval(cases, top_k, args.penalty)
     else:
         results = await _run_full(cases, args.base_url, top_k)
 

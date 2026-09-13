@@ -27,6 +27,15 @@ def _version_of(path: Path) -> str | None:
     return f"V{matched.group(1)}" if matched else None
 
 
+def _status_of(path: Path) -> str:
+    """样例语料用文件名标注废止状态。
+
+    真实系统里这个状态应当来自文档管理系统（DMS）或入库接口的显式字段，
+    这里只是把"必须显式标记"这件事做出来。
+    """
+    return "deprecated" if "已废止" in path.name else "active"
+
+
 async def main() -> int:
     files = sorted(CORPUS_DIR.glob("*.md"))
     if not files:
@@ -36,9 +45,17 @@ async def main() -> int:
     async with async_session_factory() as session:
         for path in files:
             relative = path.relative_to(ROOT).as_posix()
-            result = await ingest_file(session, relative, version=_version_of(path))
+            result = await ingest_file(
+                session,
+                relative,
+                version=_version_of(path),
+                status=_status_of(path),
+            )
             state = "跳过（已存在同版本）" if result.skipped else "写入"
-            print(f"{state}  {relative}  version={_version_of(path)}  切片={result.chunk_count}")
+            print(
+                f"{state}  {relative}  version={_version_of(path)} "
+                f"status={_status_of(path)}  切片={result.chunk_count}"
+            )
     return 0
 
 

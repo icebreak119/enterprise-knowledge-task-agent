@@ -43,6 +43,7 @@ async def ingest_file(
     *,
     embedder: Embedder | None = None,
     version: str | None = None,
+    status: str = "active",
 ) -> IngestResult:
     """把单个文件入库。
 
@@ -71,6 +72,8 @@ async def ingest_file(
         path: 文件路径。
         embedder: 向量化实现；为 None 时用 `OpenAICompatEmbedder`。
         version: 文档版本，来自文件名或调用方；None 时按"无版本"处理。
+        status: active / deprecated。废止版本入库时必须显式标记，
+            检索侧靠它做降权，否则过期条款会和现行条款同等被召回。
     """
     settings = get_settings()
     if not settings.embedding_enabled:
@@ -89,7 +92,11 @@ async def ingest_file(
         await session.execute(select(Document).where(Document.source == source))
     ).scalar_one_or_none()
 
-    if existing is not None and existing.version == version:
+    if (
+        existing is not None
+        and existing.version == version
+        and existing.status == status
+    ):
         count = (
             await session.execute(
                 select(func.count())
@@ -100,7 +107,9 @@ async def ingest_file(
         return IngestResult(existing.id, source, count, skipped=True)
 
     if existing is None:
-        existing = Document(name=document.title, source=source, version=version)
+        existing = Document(
+            name=document.title, source=source, version=version, status=status
+        )
         session.add(existing)
         await session.flush()
     else:
@@ -109,6 +118,7 @@ async def ingest_file(
             delete(DocumentChunk).where(DocumentChunk.document_id == existing.id)
         )
         existing.version = version
+        existing.status = status
 
     session.add_all(
         DocumentChunk(

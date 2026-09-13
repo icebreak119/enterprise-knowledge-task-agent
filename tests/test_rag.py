@@ -14,7 +14,10 @@ CORPUS = (
     Path(__file__).resolve().parents[1] / "data" / "policies" / "售后服务管理制度-V2.0.md"
 )
 DEPRECATED = (
-    Path(__file__).resolve().parents[1] / "data" / "policies" / "售后服务管理制度-V1.1.md"
+    Path(__file__).resolve().parents[1]
+    / "data"
+    / "policies"
+    / "售后服务管理制度-V1.1-已废止.md"
 )
 
 

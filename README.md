@@ -142,10 +142,34 @@ python scripts/run_eval.py --mode full     # 走真实 /api/chat，连引用一�
 20 道题分四类：直接问答、版本陷阱、应拒答、跨段证据。
 指标：`recall_at_k` / `version_accuracy` / `refuse_accuracy` / `citation_accuracy`。
 
-**当前基线（top_k=5）**：recall 0.975、version **0.75**、refuse 1.0、citation 1.0，20 题失败 5 条。
+### 基线（修复前，top_k=5）
 
-`version_accuracy 0.75` 就是"过期政策被优先召回"这个问题的量化结果——
-5 道题的 top1 命中了已废止的 V1.1。后续所有优化都拿这个数字对照。
+```
+recall_at_k        0.975
+version_accuracy   0.75     ← 5/20 的 top1 命中已废止的 V1.1
+refuse_accuracy    1.0
+citation_accuracy  1.0
+failures           5 / 20
+```
+
+### 修复后（废止版本降权 0.15）
+
+```
+recall_at_k        1.0
+version_accuracy   1.0      ← 0.75 → 1.0
+refuse_accuracy    1.0
+failures           0 / 20
+```
+
+做法：`documents.status` 显式标记废止（不靠"版本号最大即现行"推断——
+只召回到旧版本时那种推断会失效），检索时对废止切片加距离惩罚后重排。
+**降权而非过滤**，保留"旧版本说过什么"的可追溯性。
+
+扫参显示效果从 0.05 起生效、在 0.1–0.6 区间稳定，不是卡在巧合值上。
+代价：用户明确想查旧版本时会变难，已在文档中记录。
+
+> 诚实提示：20 道题规模偏小且由本人标注，1.0 这个数字只说明**在这批题上**不再失败，
+> 不等于"版本问题已彻底解决"。扩大评测集后指标很可能回落。
 
 ## 目录结构
 
