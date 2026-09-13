@@ -8,6 +8,13 @@ from app.rag.chunker import Chunk, chunk_document
 from app.rag.embeddings import Embedder, OpenAICompatEmbedder
 from app.rag.ingest import IngestResult, ingest_file
 from app.rag.loader import LoadedDocument, load_document
+from app.rag.retriever import (
+    RetrievedChunk,
+    build_context,
+    cited_chunk_ids,
+    search,
+    should_refuse,
+)
 
 __all__ = [
     "Chunk",
@@ -15,7 +22,12 @@ __all__ = [
     "IngestResult",
     "LoadedDocument",
     "OpenAICompatEmbedder",
+    "RetrievedChunk",
+    "build_context",
     "chunk_document",
+    "cited_chunk_ids",
     "ingest_file",
     "load_document",
+    "search",
+    "should_refuse",
 ]

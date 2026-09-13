@@ -47,6 +47,12 @@ class Settings(BaseSettings):
         """是否配置了可用的 embedding 凭据；未配置时入库链路不可用。"""
         return bool(self.llm_api_key)
 
+    # 检索
+    rag_top_k: int = 5
+    # 余弦距离阈值：超过则认为"库里没有足够相近的资料"→ 拒答。
+    # 这是保守初值，必须由评测集的距离分布标定后才算数。
+    rag_max_distance: float = 0.5
+
     @property
     def llm_enabled(self) -> bool:
         """是否配置了可用的 LLM 凭据；未配置时自动降级到离线 Provider。"""
