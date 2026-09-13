@@ -215,13 +215,37 @@ pip install -e .
 copy .env.example .env
 ```
 
-### 4. 写入演示数据（可选）
+### 4. 建表（Alembic 迁移）
+
+```bash
+alembic upgrade head
+```
+
+连接串来自 `.env` 的 `DATABASE_URL`，不需要在 `alembic.ini` 里再写一份。
+应用启动时会自检表是否齐全，缺表会直接报"请先执行 alembic upgrade head"。
+
+**改了模型之后**：
+
+```bash
+alembic revision --autogenerate -m "说明改了什么"
+alembic upgrade head
+```
+
+`tests/test_migrations.py` 会检查"模型里有、库里没有"的表，防止再一次欠下迁移债。
+
+### 5. 写入演示数据（可选）
 
 ```bash
 python -m app.db.seed
 ```
 
-### 5. 启动服务
+### 6. 文档入库（可选）
+
+```bash
+python scripts/ingest_corpus.py
+```
+
+### 7. 启动服务
 
 ```bash
 uvicorn app.main:app --reload
@@ -248,7 +272,7 @@ uvicorn app.main:app --reload
 再生成回答；`task_execution` 与 `human_handoff` 会置 `need_human=true`。
 Day 4 起这两步会由 LangGraph 编排，并接上真实检索与工具。
 
-### 6. 跑测试（无需 API Key）
+### 8. 跑测试（无需 API Key）
 
 ```bash
 pytest -q

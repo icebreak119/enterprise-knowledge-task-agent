@@ -96,20 +96,12 @@ def test_deprecated_is_not_deleted_by_penalty():
     assert ranked[0].is_deprecated
 
 
-async def test_search_returns_results_sorted_by_distance():
+async def test_search_returns_results_sorted_by_distance(db_session):
     """集成测试：需要本机 PostgreSQL 与 embedding 接口，连不上就跳过。"""
-    from sqlalchemy import text
-
-    from app.db.session import async_session_factory
-
     try:
-        async with async_session_factory() as session:
-            await session.execute(text("select 1"))
+        chunks = await search(db_session, "旗舰型设备整机保修多久？", top_k=3)
     except Exception as exc:  # noqa: BLE001
-        pytest.skip(f"数据库不可用，跳过检索集成测试：{exc}")
-
-    async with async_session_factory() as session:
-        chunks = await search(session, "旗舰型设备整机保修多久？", top_k=3)
+        pytest.skip(f"数据库或 embedding 不可用，跳过检索集成测试：{exc}")
 
     if not chunks:
         pytest.skip("库里没有切片，先跑 scripts/ingest_corpus.py")
