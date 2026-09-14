@@ -12,6 +12,11 @@ async def _empty_search(session, query, **kwargs):
     return []
 
 
+async def _stub_tool(name, arguments, session):
+    """工具执行要连数据库，单测里替换成固定返回，保证测试离线且稳定。"""
+    return f"[stub] {name} 已执行，参数 {arguments}"
+
+
 @pytest.fixture
 async def db_session():
     """集成测试专用会话。
@@ -40,6 +45,7 @@ def client(monkeypatch):
     注意不使用 `with TestClient(app)`，避免触发 lifespan 去连数据库。
     """
     monkeypatch.setattr(routes_chat, "search", _empty_search)
+    monkeypatch.setattr(routes_chat, "run_tool", _stub_tool)
     app.dependency_overrides[get_llm] = lambda: FakeProvider()
     test_client = TestClient(app)
     yield test_client

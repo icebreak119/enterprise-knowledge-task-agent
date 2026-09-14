@@ -4,6 +4,8 @@
 这样换模型 / 换厂商只需要改配置或新增一个实现类。
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
 
@@ -18,9 +20,24 @@ class ChatMessage:
     content: str
     name: str | None = None
     tool_call_id: str | None = None
+    # assistant 消息携带工具调用；tool 角色消息则不携带此字段
+    tool_calls: list[ToolCall] | None = None
 
     def to_payload(self) -> dict[str, Any]:
-        payload: dict[str, Any] = {"role": self.role, "content": self.content}
+        payload: dict[str, Any] = {"role": self.role}
+        if self.role == "assistant" and self.tool_calls:
+            # OpenAI 要求 assistant + tool_calls 时 content 为字符串（可为空）
+            payload["content"] = self.content or ""
+            payload["tool_calls"] = [
+                {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {"name": tc.name, "arguments": tc.arguments},
+                }
+                for tc in self.tool_calls
+            ]
+        else:
+            payload["content"] = self.content
         if self.name:
             payload["name"] = self.name
         if self.tool_call_id:
